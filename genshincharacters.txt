@@ -1,0 +1,70 @@
+Albedo
+Alhaitham
+Aloy
+Amber
+Arataki_itto
+Baizhu
+Barbara
+Beidou
+Bennett
+Candace
+Chongyun
+Collei
+Cyno
+Dehya
+Diluc
+Diona
+Dori
+Eula
+Faruzan
+Fischl
+Ganyu
+Gorou
+Jean
+Kaedehara Kazuha
+Kaeya
+Kamisato Ayaka
+Kamisato Ayato
+Kaveh
+Keqing
+Kirara
+Klee
+Kujou Sara
+Kuki Shinobu
+Layla
+Lisa
+Mika
+Mona
+Nahida
+Nilou
+Ningguang
+Noelle
+Qiqi
+Raiden Shogun
+Razor
+Rosana
+Sangonomiya Kokomi
+Sayu
+Shenhe
+Shikanoin Heizou
+Sucrose
+Tartaglia
+Thoma
+Tighnari
+Traveler (Anemo)
+Traveler (Dendro)
+Traveler (Electro)
+Traveler (Geo)
+Venti
+Wanderer
+Xiangling
+Xiao
+Xingqiu
+Xinyan
+Yae Miko
+Yanfei
+Yaoyao
+Yelan
+Yoimya
+Yun jin
+Zhongli

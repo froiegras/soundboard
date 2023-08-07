@@ -1,0 +1,3 @@
+TOKEN = 'MTA5NzQ5NjM2ODUxMzI5ODQ2Mg.GzrJ0q.7CbbdSE3HZfNPvKtwGF1zCrINQK05AJLTFwkDM'
+spotify_client_id = '60212563f5d84557ac36d66e760d47cc'
+spotify_client_secret = '5d15f03e6e2747708b9f02b5f5cffbe8'
