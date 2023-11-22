@@ -1,9 +1,7 @@
 # Library Imports
-import nextcord, os, re, urllib, pytube, asyncio, datetime, pickledb, requests, random, instaloader
-from nextcord.utils import get
+import nextcord, os, asyncio, datetime, pickledb, random
 from nextcord.ext import commands
 from nextcord import FFmpegPCMAudio
-from config import TOKEN, spotify_client_secret, spotify_client_id
 
 intents = nextcord.Intents.default()
 intents.message_content = True
@@ -12,27 +10,26 @@ client = commands.Bot(command_prefix = '!', intents = intents)
 # Lists
 star = []
 files = []
+reminders = []
 leaderboard = []
 emotes = {}
+
 
 # Files and Folders
 audiopeg = "C:/ffmpeg/ffmpeg.exe"
 folder = r'C:/Users/a/Documents/GitHub/discord bot/sound' # Soundbite directories
 won = r'C:/Users/a/Documents/GitHub/soundboard/wonbonk.mp4' # Video variable
+saed = r'C:/Users/a/Documents/GitHub/soundboard/whysaed.mp4' # Video variable
 dir = os.listdir(folder)
 
 # Databases
 attend = pickledb.load('C:/Users/a/Documents/GitHub/discord bot/db/attend.db', True)
 clock = pickledb.load('C:/Users/a/Documents/GitHub/discord bot/db/clock.db', True)
 
-# Spotify API (not used)
-# spotify_client_credentials = SpotifyClientCredentials(client_id = spotify_client_id, client_secret = spotify_client_secret)
-# spotify = spotipy.Spotify(client_credentials_manager=spotify_client_credentials)
-
 # Ready message
 @client.event
 async def on_ready():
-    print("Soundboard is now online")
+    print("KN Bot is now online")
 
 # Shutdown command
 @client.command(description = "Shutdown bot")
@@ -68,6 +65,10 @@ async def on_message(message):
         print('wonyoungg detected')
         vid = nextcord.File(won)
         await message.channel.send(file = vid)
+    if message.content.lower() == 'sad':
+        print('saed detected')
+        vid = nextcord.File(saed)
+        await message.channel.send(file = vid)
     if message.content.lower() == 'no':
         print("no detected")
         await message.channel.send("https://media.giphy.com/media/fXnRObM8Q0RkOmR5nf/giphy.gif")
@@ -86,6 +87,9 @@ async def on_message(message):
     if message.content.lower() in ['honkai', 'honkai impact 3', 'hi3']:
         print("honkai detected")
         await message.channel.send("https://tenor.com/bJcM6.gif")
+    if message.content.lower() == "audacity":
+        print("audacity detected")
+        await message.channel.send("https://media.discordapp.net/attachments/1040089640050372769/1153529599003725835/audacity_cover.png?width=885&height=498")
     if message.content.lower() == "sus":
         print("amogus detected")
         await message.channel.send("""
@@ -118,6 +122,12 @@ async def on_message(message):
         await message.channel.send("https://tenor.com/bJpmN.gif")
     if 'crazy' in message.content.lower() and not message.author.bot:
         await message.channel.send("Crazy? I was crazy once. They locked me in a room. A rubber room. A rubber room filled with rats. And rats make me crazy. Crazy? I was crazy once. They locked me in a room. A rubber room. A rubber room filled with rats. And rats make me crazy.")
+    if 'barack' in message.content.lower() or "were so barack" in message.content.lower() or "obama" in message.content.lower() or "we're back" in message.content.lower() or "were back" in message.content.lower():
+        await message.channel.send("https://media.discordapp.net/attachments/766470595109453846/1147847134410981438/FwhNQWKWwAYVrjg.png?width=498&height=498")
+    if 'bad' in message.content.lower() or "so bad" in message.content.lower():
+        await message.channel.send("https://streamable.com/wv85uj")
+    if 'goat' in message.content.lower() and not message.author.bot:
+        await message.channel.send("https://media.discordapp.net/attachments/766470595109453846/1153549726160011376/dont_underestimate_a_goat.png")
     if 'instagram.com/' in message.content.lower():  #Check if the message contains an Instagram link
         print('Instagram link detected')
         if not message.author.bot: # Check if the message is from a user (not a bot)
@@ -127,10 +137,27 @@ async def on_message(message):
                 await message.edit(suppress = True) # Remove embed rom previous message
                 parts = message.content.split('instagram.com') # Split the message content by 'instagram.com'
                 modified_link = parts[0] + 'ddinstagram.com' + parts[1] # Insert 'dd' between 'www.' and 'instagram.com'
-                await message.channel.send(f'{modified_link} \n **Sent by @{message.author.name}**') # Send the modified link back to the user
+                await message.reply(f'{modified_link} \n **Sent by @{message.author.name}**', mention_author = False) # Send the modified link back to the user
+    if 'tiktok.com/' in message.content.lower():  #Check if the message contains an tiktok link
+        print('Tiktok link detected')
+        if not message.author.bot: # Check if the message is from a user (not a bot)
+            if 'vxtiktok.com' in message.content.lower():
+                print('Already embedded')
+            elif 'tiktok.com' in message.content: # Check if the message contains an Tiktok link
+                await message.edit(suppress = True) # Remove embed rom previous message
+                parts = message.content.split('tiktok.com') # Split the message content by 'tiktok.com'
+                modified_link = parts[0] + 'vxtiktok.com' + parts[1] # Insert 'vx' between 'www.' and 'tiktok.com'
+                await message.reply(f'{modified_link} \n **Sent by @{message.author.name}**', mention_author = False) # Send the modified link back to the user
+    if 'twitter.com/' in message.content.lower() or 'x.com/' in message.content.lower():
+        print('Twitter link detected')
+        if not message.author.bot:
+            if 'vxtwitter.com' in message.content.lower():
+                print('Already embedded')
+            elif 'twitter.com' in message.content.lower() or 'x.com' in message.content.lower():
+                await message.edit(suppress=True)
+                modified_content = message.content.replace('twitter.com', 'vxtwitter.com').replace('x.com', 'vxtwitter.com')
+                await message.reply(f'{modified_content}\n**Sent by @{message.author.name}**', mention_author=False)
     await client.process_commands(message)
-
-
 
 @client.command(description = "Bot joins the user's vurrent voice channel")
 async def join(ctx): # Join command 
@@ -210,33 +237,43 @@ async def stars(ctx): # Star list command
 
 @client.command(description = "Clock in")
 async def clockin(ctx): # Clock in command
-    now = datetime.datetime.now()
-    date = [now.year, now.month, now.day]
-    author = str(ctx.message.author)
-    memb = author.split('#')
-    user = memb[0]
-    
-    if not attend.exists(user):
-        attend.set(user, 0)
-        clock.set(user, [1997, 1, 1])
-        print(f'new user added at {date}')
+    try:
+        now = datetime.datetime.now()
+        date = [now.year, now.month, now.day]
+        hour = now.hour
+        minute = now.minute
+        second = now.second
 
-    if clock.get(user) != date: 
-        await ctx.reply(f'✅ **Congrats!** {user} has clocked in for today. Here have a gold star [⭐]')
-        attend.append(user, 1)
-        clock.set(user, date)
-        if attend.get(user) != 0:
-            if attend.get(user) == 7: # week
-                await ctx.send(f"{user}, you've logged in for a week!")
-            elif attend.get(user) == 30: # month
-                await ctx.send(f"{user}, you've logged in for a month!")
-            elif attend.get(user) == 180: # 6 months
-                await ctx.send(f"{user}, you've logged in for half a year!")
-            elif attend.get(user) == 365: # year
-                await ctx.send(f"{user}, you've logged in for a year!")
-        print(f'{user} +1 attendance')
-    else:
-        await ctx.send(f'{user} has already clocked in for today comeback tomorrow!')
+        formatted_time = f"{hour:02}:{minute:02}:{second:02}"  # Format time with at least 2 digits
+
+        author = str(ctx.message.author)
+        memb = author.split('#')
+        user = memb[0]
+
+        if not attend.exists(user):
+            attend.set(user, 0)
+            clock.set(user, [1997, 1, 1])
+            print(f'new user added at {date}')
+
+        if clock.get(user) != date:
+            await ctx.reply(f'✅ **Congrats!** {user} has clocked in for today at {formatted_time}. Here have a gold star [⭐]')
+            attend.append(user, 1)
+            clock.set(user, date)
+            if attend.get(user) != 0:
+                if attend.get(user) == 7:  # week
+                    await ctx.send(f"{user}, you've logged in for a week!")
+                elif attend.get(user) == 30:  # month
+                    await ctx.send(f"{user}, you've logged in for a month!")
+                elif attend.get(user) == 180:  # 6 months
+                    await ctx.send(f"{user}, you've logged in for half a year!")
+                elif attend.get(user) == 365:  # year
+                    await ctx.send(f"{user}, you've logged in for a year!")
+            print(f'{user} +1 attendance')
+        else:
+            await ctx.send(f'{user} has already clocked in for today at {formatted_time}, come back tomorrow!')
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+
 
 # Add stars to @user command
 @client.command()
@@ -256,15 +293,15 @@ async def attendance(ctx):
     member = ctx.author
     nickname = member.nick if member.nick else member.name
     accolades = [
-        (365, "WELL DONE YOU HAVE DONE IT {nickname} YOU HAVE BEEN WITH US FOR MORE THAN A YEAR"),
+        (365, "WELL DONE! YOU HAVE DONE IT {nickname} YOU HAVE BEEN WITH US FOR MORE THAN A YEAR (get a life m8)"),
         (210, "You do know that you're not being paid to this right, {nickname}?"),
-        (180, "WOW! {nickname} MORE THAN 6 MONTHS?? GADDAMN"),
-        (150, "5 months really? {nickname} r u sure ur touching grass?"),
-        (120, "4 months now, do u have a life {nickname}?"),
+        (183, "WOW! {nickname} MORE THAN 6 MONTHS?? GADDAMN"),
+        (150, "~5 months really? {nickname} r u sure ur touching grass?"),
+        (120, "almost 4 months now, do u have a life {nickname}?"),
         (101, "Damn {nickname}, you've logged in for more than 100 days"),
         (90, "3 months, r u ok {nickname}?"),
         (60, "2 months wow! {nickname}"),
-        (30, "Congrats {nickname}! You've logged in more than there are days in February"),
+        (30, "Congrats {nickname}! You've logged in more days than there are in February"),
         (14, "Damn {nickname}, you've logged in for more than 2 weeks?"),
         (7, "Damn {nickname}, you've logged in for more than a week?"),
     ]
@@ -280,34 +317,6 @@ async def attendance(ctx):
                 break
     else:
         await ctx.reply('You haven\'t clocked in a single time? We should fire you.')
-
-# Advice command from API
-@client.command()
-async def fortunecookie(ctx):
-    print('advice was called')
-    response = requests.get('https://api.adviceslip.com/advice') 
-    if response.status_code == 200:
-        advice = response.json()['slip']['advice']
-        print(f'{advice} sent')
-        await ctx.send(advice)
-    else:
-        await ctx.send("Hmmm, looks to me like you don't need any adivce for now (✿◡‿◡)")
-
-# Check age based from name from API
-@client.command()
-async def age(ctx, name):
-    print('age was called')
-    try:
-        response = requests.get(f'https://api.agify.io/?name={name}') # Get API response
-        if response.status_code == 200:
-            data = response.json()
-            age = data['age']
-            await ctx.send(f"The estimated age for {name} is {age} years old.")
-        else:
-            await ctx.send("Sorry, I couldn't retrieve the age information.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
 
 # Genshin randomizer 
 @client.command()
