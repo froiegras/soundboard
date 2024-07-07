@@ -24,7 +24,7 @@ audiopeg = "C:/ffmpeg/ffmpeg.exe"
 folder = r'C:/Users/a/Documents/GitHub/discord bot/sound' # Soundbite directories
 won = r'C:/Users/a/Documents/GitHub/soundboard/wonbonk.mp4' # Video variable
 saed = r'C:/Users/a/Documents/GitHub/soundboard/whysaed.mp4' # Video variable
-dir = os.listdir(folder)
+playlist_dir = os.listdir(folder)
 
 # Databases
 attend = pickledb.load('C:/Users/a/Documents/GitHub/discord bot/db/attend.db', True)
@@ -247,7 +247,7 @@ async def play(ctx, arg): # Play command
 @client.command(description = "Shows soundboard playlist")
 async def playlist(ctx): # Playlist command
   print(";playlist command has been called")
-  for file in dir:
+  for file in playlist_dir:
       f, e = os.path.splitext(folder + '/' +  file)
       fname = f.split('/')
       re_name = fname[-1]
@@ -353,5 +353,5 @@ async def attendance(ctx):
         break
   else:
     await ctx.reply('You haven\'t clocked in a single time? We should fire you.')
-    
+
 client.run(TOKEN)
