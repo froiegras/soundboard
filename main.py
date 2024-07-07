@@ -1,5 +1,5 @@
 # Library Imports
-import nextcord, os, datetime, pickledb, random, time
+import nextcord, os, datetime, pickledb, json, time
 from nextcord.ext import commands
 from nextcord import FFmpegPCMAudio
 from config import TOKEN
@@ -19,16 +19,23 @@ msg_time = {}
 spam_reply = "I ain't reading all that. I'm sorry for you though or sorry that happened."
 
 
-# Files and Folders
-audiopeg = "C:/ffmpeg/ffmpeg.exe"
-folder = r'C:/Users/a/Documents/GitHub/discord bot/sound' # Soundbite directories
-won = r'C:/Users/a/Documents/GitHub/soundboard/wonbonk.mp4' # Video variable
-saed = r'C:/Users/a/Documents/GitHub/soundboard/whysaed.mp4' # Video variable
-playlist_dir = os.listdir(folder)
+# Load folders and files
+with open('config.json', 'r') as config_file:
+  config = json.load(config_file)
+
+audiopeg = config.get('audiopeg')
+playlist_dir = config.get('playlist_dir')
+won = config.get('won')
+saed = config.get('saed')
+attenddb = config.get('attend')
+clockdb = config.get('clock')
+
+if not all([audiopeg, playlist_dir, won, saed, attenddb, clockdb]):
+  raise ValueError("One or more paths not found in the configuration file.")
 
 # Databases
-attend = pickledb.load('C:/Users/a/Documents/GitHub/discord bot/db/attend.db', True)
-clock = pickledb.load('C:/Users/a/Documents/GitHub/discord bot/db/clock.db', True)
+attend = pickledb.load(attenddb, True)
+clock = pickledb.load(clockdb, True)
 
 # Ready message
 @client.event
@@ -248,10 +255,10 @@ async def play(ctx, arg): # Play command
 async def playlist(ctx): # Playlist command
   print(";playlist command has been called")
   for file in playlist_dir:
-      f, e = os.path.splitext(folder + '/' +  file)
-      fname = f.split('/')
-      re_name = fname[-1]
-      files.append(re_name)
+    f, e = os.path.splitext(folder + '/' +  file)
+    fname = f.split('/')
+    re_name = fname[-1]
+    files.append(re_name)
   embed = nextcord.Embed(title = 'Sound List')
   filelist = '\n'.join(files)
   embed.add_field(name = 'List of available sounds', value = filelist)
@@ -262,8 +269,8 @@ async def stars(ctx): # Star list command
   users = list(attend.getall())
   sorted_users = sorted(users)
   for i in range(len(sorted_users)):
-      leaderboard.append(sorted_users[i])
-      star.append(attend.get(sorted_users[i]))
+    leaderboard.append(sorted_users[i])
+    star.append(attend.get(sorted_users[i]))
   starlist = '\n'.join(map(str, star)) # fix star 
   ldb = '\n'.join(map(str, leaderboard)) # fix star 
   embed = nextcord.Embed(title = '⭐ List')
@@ -296,14 +303,14 @@ async def clockin(ctx): # Clock in command
       attend.append(user, 1)
       clock.set(user, date)
       if attend.get(user) != 0:
-          if attend.get(user) == 7:  # week
-              await ctx.send(f"{user}, you've logged in for a week!")
-          elif attend.get(user) == 30:  # month
-              await ctx.send(f"{user}, you've logged in for a month!")
-          elif attend.get(user) == 180:  # 6 months
-              await ctx.send(f"{user}, you've logged in for half a year!")
-          elif attend.get(user) == 365:  # year
-              await ctx.send(f"{user}, you've logged in for a year!")
+        if attend.get(user) == 7:  # week
+            await ctx.send(f"{user}, you've logged in for a week!")
+        elif attend.get(user) == 30:  # month
+            await ctx.send(f"{user}, you've logged in for a month!")
+        elif attend.get(user) == 180:  # 6 months
+            await ctx.send(f"{user}, you've logged in for half a year!")
+        elif attend.get(user) == 365:  # year
+            await ctx.send(f"{user}, you've logged in for a year!")
       print(f'{user} +1 attendance')
     else:
       await ctx.send(f'{user} has already clocked in for today at {formatted_time}, come back tomorrow!')

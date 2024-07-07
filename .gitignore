@@ -158,3 +158,4 @@ cython_debug/
 # Files
 whysaed.mp4
 .vscode
+config.json
