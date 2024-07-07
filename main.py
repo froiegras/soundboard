@@ -208,7 +208,7 @@ async def join(ctx): # Join command
     channel = ctx.message.author.voice.channel
     voice = await channel.connect()
     # print('Bot has connected') // for debugging
-    voice.play(nextcord.FFmpegPCMAudio(executable = "C:/ffmpeg/ffmpeg.exe", source = f"{folder}/lily.mp3"))
+    voice.play(nextcord.FFmpegPCMAudio(executable = "C:/ffmpeg/ffmpeg.exe", source = f"{playlist_dir}/lily.mp3"))
   else:
     await ctx.send(str(ctx.author.name) + " is not in a channel.")
   await ctx.message.delete()
@@ -246,7 +246,7 @@ async def stop(ctx): # Stop command
 @client.command(description = "Bot plays songs from playlist")
 async def play(ctx, arg): # Play command
   voice = ctx.guild.voice_client
-  song = f'{folder}/' + arg + '.mp3'
+  song = f'{playlist_dir}/' + arg + '.mp3'
   source = FFmpegPCMAudio(executable = audiopeg, source = song)
   voice.play(source)
   print(f'Now Playing: {arg}')
@@ -255,7 +255,7 @@ async def play(ctx, arg): # Play command
 async def playlist(ctx): # Playlist command
   print(";playlist command has been called")
   for file in playlist_dir:
-    f, e = os.path.splitext(folder + '/' +  file)
+    f, e = os.path.splitext(playlist_dir + '/' +  file)
     fname = f.split('/')
     re_name = fname[-1]
     files.append(re_name)
