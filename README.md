@@ -1,6 +1,6 @@
 # Soundboard Bot
 
-This is a soundboard bot I initially made before discord pushed their changes to add sound boards in Discord as an actual feature. This is made using `Python` with `Nextcord` and for the "backend" ~~for now~~ it is using `pickledb`.
+This is a soundboard bot I initially made before discord pushed their changes to add sound boards in Discord as an actual feature. This is made using `Python` with `Nextcord` and for the "backend" ~~for now~~ is using `pickledb`.
 
 ### Available Features or Commands:
 ```
