@@ -1,6 +1,5 @@
 config.py
 genshincharacters.txt
-wonbonk.mp4
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -156,7 +155,6 @@ cython_debug/
 #.idea/
 
 # Files
-whysaed.mp4
 .vscode
 config.json
 message.json
