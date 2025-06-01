@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 playlist_dir = os.getenv('PLAYLIST_DIR')
 audiopeg = os.getenv('FFMPEG_LOCATION')
 files = []
@@ -25,7 +24,7 @@ class Voice(commands.Cog):
             voice = await channel.connect()
             voice.play(
                 nextcord.FFmpegPCMAudio(
-                    executable="C:/ffmpeg/ffmpeg.exe",
+                    executable=audiopeg,
                     source=f"{playlist_dir}/lily.mp3"
                 )
             )

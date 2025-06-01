@@ -1,12 +1,15 @@
+import os
 import datetime
 import nextcord
 import pickledb
 
-from main import config
 from nextcord.ext import commands
+from dotenv import load_dotenv
 
-attenddb = config.get('attend')
-clockdb = config.get('clock')
+load_dotenv()
+
+attenddb = os.getenv('ATTEND_DB')
+clockdb = os.getenv('CLOCK_DB')
 
 # Databases
 attend = pickledb.__init__(attenddb)
@@ -18,12 +21,14 @@ reminders = []
 leaderboard = []
 
 class Attendance(commands.Cog):
+    """ A cog for handling attendance and star tracking """
     def __init__(self, bot):
         self.bot = bot
 
     # Star list command
     @commands.command(description = "Shows the list of stars of users")
     async def stars(self, ctx):
+        """ Shows the list of stars of users """
         users = list(attend.all())
         sorted_users = sorted(users)
         for i in range(len(sorted_users)):
@@ -39,6 +44,7 @@ class Attendance(commands.Cog):
     # Clock in command
     @commands.command(description = "Clock in")
     async def clockin(self, ctx):
+        """ Clock in for the day """
         try:
             now = datetime.datetime.now()
             date = [now.year, now.month, now.day]
@@ -81,6 +87,7 @@ class Attendance(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def adds(self, ctx):
+        """ Adds a star to the mentioned user """
         uname = str(ctx.message.mentions[0])
         memb = uname.split('#')
         user = memb[0]
@@ -91,6 +98,7 @@ class Attendance(commands.Cog):
     # Check attendance command
     @commands.command(description = "Shows the user's number of stars")
     async def attendance(self, ctx):
+        """ Shows the user's number of stars and accolades """
         user = str(ctx.message.author.name)
         member = ctx.author
         nickname = member.nick if member.nick else member.name
@@ -121,4 +129,5 @@ class Attendance(commands.Cog):
             await ctx.reply('You haven\'t clocked in a single time? We should fire you.')
 
 def setup(bot):
+    """ Load the Attendance cog """
     bot.add_cog(Attendance(bot))
