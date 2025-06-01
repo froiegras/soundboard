@@ -1,16 +1,16 @@
-import nextcord, json, datetime, pickledb
+import datetime
+import nextcord
+import pickledb
 
+from main import config
 from nextcord.ext import commands
-
-with open('config.json', 'r') as config_file:
-    config = json.load(config_file)
 
 attenddb = config.get('attend')
 clockdb = config.get('clock')
 
 # Databases
-# attend = pickledb.load(attenddb, auto_dump=True)
-# clock = pickledb.load(clockdb, auto_dump=True)
+attend = pickledb.__init__(attenddb)
+clock = pickledb.__init__(clockdb)
 
 # Lists
 star = []
@@ -24,7 +24,7 @@ class Attendance(commands.Cog):
     # Star list command
     @commands.command(description = "Shows the list of stars of users")
     async def stars(self, ctx):
-        users = list(attend.getall())
+        users = list(attend.all())
         sorted_users = sorted(users)
         for i in range(len(sorted_users)):
             leaderboard.append(sorted_users[i])
@@ -46,7 +46,7 @@ class Attendance(commands.Cog):
             minute = now.minute
             second = now.second
 
-            formatted_time = f"{hour:02}:{minute:02}:{second:02}"  # Format time with at least 2 digits
+            formatted_time = f"{hour:02}:{minute:02}:{second:02}"
 
             author = str(ctx.message.author)
             memb = author.split('#')
