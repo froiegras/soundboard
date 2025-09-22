@@ -74,9 +74,9 @@ class Reply(commands.Cog):
                 f"""
                 no be. don't say that. you're more than just a {substring_before_lang_ako}, be.
                 you are loved. you are valuable. you matter. everytime na maiisip mo na..
-                \"{substring_before_lang_ako} lang ako 😭\" no. be, you are a wonderful person
+                \" lang ako 😭\" no. be, you are a wonderful person
                 and we appreciate you so much. i just want you to know na valid ka. hindi biro
-                maging cr . it must've been tough pero you did it. you are so strong kaya
+                maging {substring_before_lang_ako} . it must've been tough pero you did it. you are so strong kaya
                 sobrang proud kami sayo, be.
                 """
             )
