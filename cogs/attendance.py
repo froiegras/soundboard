@@ -8,13 +8,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-attenddb = os.getenv('ATTEND_DB')
-clockdb = os.getenv('CLOCK_DB')
-
-# Databases
-attend = pickledb.__init__(attenddb)
-clock = pickledb.__init__(clockdb)
-
 # Lists
 star = []
 reminders = []
@@ -24,84 +17,121 @@ class Attendance(commands.Cog):
     """ A cog for handling attendance and star tracking """
     def __init__(self, bot):
         self.bot = bot
+        self.collection = bot.db["attendance"]
 
     # Star list command
-    @commands.command(description = "Shows the list of stars of users")
+    @commands.command(description="Shows the list of stars of users")
     async def stars(self, ctx):
         """ Shows the list of stars of users """
-        users = list(attend.all())
-        sorted_users = sorted(users)
-        for i in range(len(sorted_users)):
-            leaderboard.append(sorted_users[i])
-            star.append(attend.get(sorted_users[i]))
-        starlist = '\n'.join(map(str, star)) # fix star
-        ldb = '\n'.join(map(str, leaderboard)) # fix star
-        embed = nextcord.Embed(title = '⭐ List')
-        embed.add_field(name = 'User', value = f"{ldb}")
-        embed.add_field(name = '⭐', value = f"{starlist}")
-        await ctx.send(embed = embed)
+        cursor = self.collection.find({})
+        records = await cursor.to_list(length=None)
+
+        if not records:
+            await ctx.send("No one has clocked in yet!")
+            return
+
+        # Sort alphabetically by username (change key if you'd rather sort by streak)
+        sorted_records = sorted(records, key=lambda r: r["username"].lower())
+
+        usernames = [r["username"] for r in sorted_records]
+        streaks = [str(r["streak"]) for r in sorted_records]
+
+        ldb = '\n'.join(usernames)
+        starlist = '\n'.join(streaks)
+
+        embed = nextcord.Embed(title='⭐ List')
+        embed.add_field(name='User', value=ldb)
+        embed.add_field(name='⭐', value=starlist)
+        await ctx.send(embed=embed)
 
     # Clock in command
-    @commands.command(description = "Clock in")
+    @commands.command(description="Clock in")
     async def clockin(self, ctx):
         """ Clock in for the day """
         try:
             now = datetime.datetime.now()
-            date = [now.year, now.month, now.day]
-            hour = now.hour
-            minute = now.minute
-            second = now.second
+            today = [now.year, now.month, now.day]
+            formatted_time = f"{now.hour:02}:{now.minute:02}:{now.second:02}"
 
-            formatted_time = f"{hour:02}:{minute:02}:{second:02}"
+            user_id = ctx.author.id
+            display_name = ctx.author.display_name  # server nickname if set, else username
 
-            author = str(ctx.message.author)
-            memb = author.split('#')
-            user = memb[0]
+            record = await self.collection.find_one({"_id": user_id})
 
-            if not attend.exists(user):
-                attend.set(user, 0)
-                clock.set(user, [1997, 1, 1])
-                print(f'new user added at {date}')
+            if record is None:
+                # New user, never clocked in before
+                record = {
+                    "_id": user_id,
+                    "username": display_name,
+                    "streak": 0,
+                    "last_clock_date": [1997, 1, 1],
+                }
+                await self.collection.insert_one(record)
+                print(f"new user added at {today}")
 
-            if clock.get(user) != date:
-                await ctx.reply(f'✅ **Congrats!** {user} has clocked in for today at {formatted_time}. Here have a gold star [⭐]')
-                attend.append(user, 1)
-                clock.set(user, date)
-                if attend.get(user) != 0:
-                    if attend.get(user) == 7:  # week
-                        await ctx.send(f"{user}, you've logged in for a week!")
-                    elif attend.get(user) == 30:  # month
-                        await ctx.send(f"{user}, you've logged in for a month!")
-                    elif attend.get(user) == 180:  # 6 months
-                        await ctx.send(f"{user}, you've logged in for half a year!")
-                    elif attend.get(user) == 365:  # year
-                        await ctx.send(f"{user}, you've logged in for a year!")
-                print(f'{user} +1 attendance')
+            if record["last_clock_date"] != today:
+                new_streak = record["streak"] + 1
+
+                await self.collection.update_one(
+                    {"_id": user_id},
+                    {
+                        "$set": {
+                            "last_clock_date": today,
+                            "username": display_name,  # keep display name fresh in case they changed it
+                        },
+                        "$inc": {"streak": 1},
+                    },
+                )
+
+                await ctx.reply(
+                    f"✅ **Congrats!** {display_name} has clocked in for today at "
+                    f"{formatted_time}. Here have a gold star [⭐]"
+                )
+
+                milestones = {7: "a week", 30: "a month", 180: "half a year", 365: "a year"}
+                if new_streak in milestones:
+                    await ctx.send(f"{display_name}, you've logged in for {milestones[new_streak]}!")
+
+                print(f"{display_name} +1 attendance")
             else:
-                await ctx.send(f'{user} has already clocked in for today at {formatted_time}, come back tomorrow!')
+                await ctx.send(
+                    f"{display_name} has already clocked in for today at "
+                    f"{formatted_time}, come back tomorrow!"
+                )
         except Exception as e:
             await ctx.send(f"An error occurred: {e}")
 
 
-    # Add stars to @user command
+        # Add stars to @user command
     @commands.command()
     @commands.is_owner()
     async def adds(self, ctx):
         """ Adds a star to the mentioned user """
-        uname = str(ctx.message.mentions[0])
-        memb = uname.split('#')
-        user = memb[0]
-        if attend.exists(user):
-            attend.append(user, 1)
-        print(f'Added +1 to {user}')
+        if not ctx.message.mentions:
+            await ctx.send("You need to mention a user!")
+            return
+
+        target = ctx.message.mentions[0]
+        user_id = target.id
+
+        record = await self.collection.find_one({"_id": user_id})
+        if record:
+            await self.collection.update_one(
+                {"_id": user_id},
+                {"$inc": {"streak": 1}}
+            )
+            print(f"Added +1 to {target.display_name}")
+        else:
+            await ctx.send(f"{target.display_name} hasn't clocked in yet, can't add a star.")
 
     # Check attendance command
-    @commands.command(description = "Shows the user's number of stars")
+    @commands.command(description="Shows the user's number of stars")
     async def attendance(self, ctx):
         """ Shows the user's number of stars and accolades """
-        user = str(ctx.message.author.name)
         member = ctx.author
+        user_id = member.id
         nickname = member.nick if member.nick else member.name
+
         accolades = [
             (366, "WELL DONE! YOU HAVE DONE IT {nickname} YOU HAVE BEEN WITH US FOR MORE THAN A YEAR (get a life m8)"),
             (210, "You do know that you're not being paid to do this right, {nickname}?"),
@@ -116,15 +146,17 @@ class Attendance(commands.Cog):
             (7, "Damn {nickname}, you've logged in for more than a week?"),
         ]
 
-        if attend.exists(user):
-            days_logged_in = attend.get(user)
+        record = await self.collection.find_one({"_id": user_id})
+
+        if record:
+            days_logged_in = record["streak"]
             await ctx.reply(f'{nickname} has {days_logged_in} ⭐ ( ﾟ∀ﾟﾉﾉﾞ')
 
-            # Check for accolades based on days_logged_in
+            # Check for accolades based on days_logged_in, highest threshold first
             for days, accolade_msg in accolades:
                 if days_logged_in >= days:
-                    await ctx.send(accolade_msg.format(nickname = nickname))
-                break
+                    await ctx.send(accolade_msg.format(nickname=nickname))
+                    break  # now correctly inside the if — stops at first match
         else:
             await ctx.reply('You haven\'t clocked in a single time? We should fire you.')
 
