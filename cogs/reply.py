@@ -72,15 +72,10 @@ class Reply(commands.Cog):
             substring_before_lang_ako = message.content[:index_lang_ako].strip()
             await message.channel.send(
                 f"""
-                no be. don't say that. you're more than just a {substring_before_lang_ako}, be.
-                you are loved. you are valuable. you matter. everytime na maiisip mo na..
-                \" lang ako 😭\" no. be, you are a wonderful person
-                and we appreciate you so much. i just want you to know na valid ka. hindi biro
-                maging {substring_before_lang_ako} . it must've been tough pero you did it. you are so strong kaya
-                sobrang proud kami sayo, be.
+                no be. don't say that. you're more than just a {substring_before_lang_ako}, be. you are loved. you are valuable. you matter. everytime na maiisip mo na.. \"{substring_before_lang_ako} lang ako 😭\" no. be, you are a wonderful person and we appreciate you so much. i just want you to know na valid ka. hindi biro maging {substring_before_lang_ako} . it must've been tough pero you did it. you are so strong kaya sobrang proud kami sayo, be.
                 """
             )
-        await self.bot.process_commands(message)
+        # await self.bot.process_commands(message)
 
 def long_message_detector(message):
     """ Detect if a message is too long or if a user is spamming """
