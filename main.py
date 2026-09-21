@@ -1,4 +1,5 @@
 import os
+import logging
 import nextcord
 import motor.motor_asyncio
 
@@ -33,4 +34,6 @@ async def shutdown():
     """ Shuts down the bot. Only the owner can use this command. """
     exit()
 
+logging.getLogger('nextcord.voice_client').setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 bot.run(os.getenv('TOKEN'))
