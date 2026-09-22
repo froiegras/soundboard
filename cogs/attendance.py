@@ -102,7 +102,7 @@ class Attendance(commands.Cog):
             await ctx.send(f"An error occurred: {e}")
 
 
-        # Add stars to @user command
+    # Add stars to @user command
     @commands.command()
     @commands.is_owner()
     async def adds(self, ctx):
