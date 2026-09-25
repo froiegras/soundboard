@@ -1,3 +1,4 @@
+import random
 import re
 import os
 import json
@@ -9,9 +10,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+n_words = ['ature', 'ail', 'ap', 'ecklace', 'ightingale', 'inja', 'otebook', 'otes', 'ow', 'urse', 'erd', 'un', 'ewborn', 'ine', 'erd', 'omad']
+
+
 # Load bot replies from JSON file
 with open('message.json', encoding="utf8") as reply_file:
     bot_reply = json.load(reply_file)
+
+with open('message.json', encoding="utf8") as reply_file:
+    name_generator = json.load(reply_file)
 
 msg_counts = {}
 msg_time = {}
@@ -24,6 +31,20 @@ class Reply(commands.Cog):
     """ A cog for handling replies to specific messages and patterns """
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    async def namer(self, ctx):
+        """ Sends a random name from the name_generator list """
+        await ctx.send(str(random.choice(name_generator)))
+
+    @commands.command()
+    async def wotd(self, ctx): # Word of the day command
+        word = str(random.choice(n_words))
+        await ctx.send('The world of the day is: n||' + word + '||.')
+
+    @commands.command()
+    async def coinflip(self, ctx): # Coin flip command
+        await ctx.send(str(random.choice(['Heads', 'Tails'])))
 
     # Message detector
     @commands.Cog.listener()
@@ -64,7 +85,8 @@ class Reply(commands.Cog):
         if ".com/" in message.content.lower() and not message.author.bot:
             # print('link detected') // for debugging
             new_link = process_links(message)
-            await message.channel.send(new_link)
+            if new_link:
+                await message.channel.send(new_link)
         if long_message_detector(message):
             return spam_reply
         if "lang ako" in message.content.lower() and not message.author.bot:
@@ -96,25 +118,26 @@ def long_message_detector(message):
 
 def process_links(message):
     """ Process links sent by users and convert them to embeddable links """
-    content = message.content.lower()
-    author_is_bot = message.author.bot
+    if message.author.bot:
+        return None
 
-    match True:
-        case _ if 'instagram.com/' in content:
-            if not author_is_bot and 'ddinstagram.com' not in content:
-                parts = message.content.split('instagram.com')
-                modified_link = parts[0] + 'ddinstagram.com' + parts[1]
-                return modified_link
-        case _ if 'tiktok.com/' in content:
-            if not author_is_bot and 'vxtiktok.com' not in content:
-                parts = message.content.split('tiktok.com')
-                modified_link = parts[0] + 'vxtiktok.com' + parts[1]
-                return modified_link
-        case _ if 'twitter.com/' in content or 'x.com/' in content:
-            if not author_is_bot and 'vxtwitter.com' not in content:
-                modified_link = message.content.replace('twitter.com', 'vxtwitter.com').replace('x.com', 'vxtwitter.com')
-                return modified_link
-    return message.content
+    content = message.content
+
+    if re.search(r'instagram\.com/', content, re.IGNORECASE) and 'ddinstagram.com' not in content.lower():
+        return re.sub(r'instagram\.com', 'ddinstagram.com', content, flags=re.IGNORECASE)
+
+    if re.search(r'tiktok\.com/', content, re.IGNORECASE) and 'vxtiktok.com' not in content.lower():
+        return re.sub(r'tiktok\.com', 'vxtiktok.com', content, flags=re.IGNORECASE)
+
+    if (re.search(r'twitter\.com/', content, re.IGNORECASE) or re.search(r'x\.com/', content, re.IGNORECASE)) \
+            and 'vx.com' not in content.lower():
+        modified = re.sub(r'twitter\.com', 'vx.com', content, flags=re.IGNORECASE)
+        modified = re.sub(r'x\.com', 'vx.com', modified, flags=re.IGNORECASE)
+        return modified
+
+    return None  # no matching platform — nothing to convert, don't repost anything
+
+
 
 def setup(bot):
     """ Setup function to add the Reply cog to the bot """
