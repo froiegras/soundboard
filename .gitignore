@@ -1,4 +1,3 @@
-config.py
 genshincharacters.txt
 
 # Byte-compiled / optimized / DLL files
@@ -159,3 +158,5 @@ cython_debug/
 config.json
 message.json
 *.db
+*.json
+*.png
