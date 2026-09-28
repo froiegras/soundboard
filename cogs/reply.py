@@ -38,12 +38,14 @@ class Reply(commands.Cog):
         await ctx.send(str(random.choice(name_generator)))
 
     @commands.command()
-    async def wotd(self, ctx): # Word of the day command
+    async def wotd(self, ctx):
+        """ Sends a random word from the n_words list """
         word = str(random.choice(n_words))
-        await ctx.send('The world of the day is: n||' + word + '||.')
+        await ctx.send('The word of the day is: n||' + word + '||.')
 
     @commands.command()
-    async def coinflip(self, ctx): # Coin flip command
+    async def coinflip(self, ctx):
+        """ Sends a random choice between 'Heads' and 'Tails' """
         await ctx.send(str(random.choice(['Heads', 'Tails'])))
 
     # Message detector
@@ -53,14 +55,12 @@ class Reply(commands.Cog):
             if re.search(pattern, message.content) and not message.author.bot:
                 await message.channel.send(response)
         if message.content.lower() == 'wonyoung':
-            # print('wonyoungg detected') // for debugging
             vid = nextcord.File(won)
             await message.channel.send(file = vid)
         if message.content.lower() == 'sad':
             vid = nextcord.File(saed)
             await message.channel.send(file = vid)
         if message.content.lower() == "sus":
-            # print("amogus detected") // for debugging
             await message.channel.send("""
         ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⣤⣤⣤⣤⣶⣦⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀
     ⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⡿⠛⠉⠙⠛⠛⠛⠛⠻⢿⣿⣷⣤⡀⠀⠀⠀⠀⠀
@@ -83,7 +83,6 @@ class Reply(commands.Cog):
     ⠀⠀⠀⠀⠀⠀⠀⠈⠛⠻⠿⠿⠿⠿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
         """)
         if ".com/" in message.content.lower() and not message.author.bot:
-            # print('link detected') // for debugging
             new_link = process_links(message)
             if new_link:
                 await message.channel.send(new_link)
@@ -132,7 +131,7 @@ def process_links(message):
     if re.search(r'\btwitter\.com/', content, re.IGNORECASE) and 'vxtwitter.com' not in content.lower():
         return re.sub(r'\btwitter\.com', 'vxtwitter.com', content, flags=re.IGNORECASE)
 
-    return None  # no matching platform, or already converted — don't repost anythingc
+    return None  # no matching platform, or already converted — don't repost anything
 
 
 def setup(bot):
