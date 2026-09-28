@@ -123,20 +123,16 @@ def process_links(message):
 
     content = message.content
 
-    if re.search(r'instagram\.com/', content, re.IGNORECASE) and 'ddinstagram.com' not in content.lower():
-        return re.sub(r'instagram\.com', 'ddinstagram.com', content, flags=re.IGNORECASE)
+    if re.search(r'\binstagram\.com/', content, re.IGNORECASE) and 'ddinstagram.com' not in content.lower():
+        return re.sub(r'\binstagram\.com', 'ddinstagram.com', content, flags=re.IGNORECASE)
 
-    if re.search(r'tiktok\.com/', content, re.IGNORECASE) and 'vxtiktok.com' not in content.lower():
-        return re.sub(r'tiktok\.com', 'vxtiktok.com', content, flags=re.IGNORECASE)
+    if re.search(r'\btiktok\.com/', content, re.IGNORECASE) and 'vxtiktok.com' not in content.lower():
+        return re.sub(r'\btiktok\.com', 'vxtiktok.com', content, flags=re.IGNORECASE)
 
-    if (re.search(r'twitter\.com/', content, re.IGNORECASE) or re.search(r'x\.com/', content, re.IGNORECASE)) \
-            and 'vx.com' not in content.lower():
-        modified = re.sub(r'twitter\.com', 'vx.com', content, flags=re.IGNORECASE)
-        modified = re.sub(r'x\.com', 'vx.com', modified, flags=re.IGNORECASE)
-        return modified
+    if re.search(r'\btwitter\.com/', content, re.IGNORECASE) and 'vxtwitter.com' not in content.lower():
+        return re.sub(r'\btwitter\.com', 'vxtwitter.com', content, flags=re.IGNORECASE)
 
-    return None  # no matching platform — nothing to convert, don't repost anything
-
+    return None  # no matching platform, or already converted — don't repost anythingc
 
 
 def setup(bot):
