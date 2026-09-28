@@ -19,7 +19,6 @@ class Attendance(commands.Cog):
         self.bot = bot
         self.collection = bot.db["attendance"]
 
-    # Star list command
     @commands.command(description="Shows the list of stars of users")
     async def stars(self, ctx):
         """ Shows the list of stars of users """
@@ -44,7 +43,6 @@ class Attendance(commands.Cog):
         embed.add_field(name='⭐', value=starlist)
         await ctx.send(embed=embed)
 
-    # Clock in command
     @commands.command(description="Clock in")
     async def clockin(self, ctx):
         """ Clock in for the day """
@@ -102,7 +100,6 @@ class Attendance(commands.Cog):
             await ctx.send(f"An error occurred: {e}")
 
 
-    # Add stars to @user command
     @commands.command()
     @commands.is_owner()
     async def adds(self, ctx):
@@ -124,7 +121,6 @@ class Attendance(commands.Cog):
         else:
             await ctx.send(f"{target.display_name} hasn't clocked in yet, can't add a star.")
 
-    # Check attendance command
     @commands.command(description="Shows the user's number of stars")
     async def attendance(self, ctx):
         """ Shows the user's number of stars and accolades """

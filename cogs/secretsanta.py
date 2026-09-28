@@ -21,7 +21,7 @@ class SecretSanta(commands.Cog):
         await self.collection.insert_one({
             "_id": user_id,
             "username": username,
-            "assigned_to": None,  # who this person is buying for
+            "assigned_to": None,
         })
         await ctx.send(f"🎁 {username} has joined the Secret Santa pool!")
 
@@ -63,7 +63,6 @@ class SecretSanta(commands.Cog):
         givers = [p["_id"] for p in participants]
         receivers = givers.copy()
 
-        # Keep shuffling until no one is assigned to themselves
         assignment = None
         for _ in range(1000):  # safety cap, effectively never hit for reasonable group sizes
             random.shuffle(receivers)
@@ -75,20 +74,17 @@ class SecretSanta(commands.Cog):
             await ctx.send("Failed to generate valid assignments, try again!")
             return
 
-        # Build a lookup for usernames and user objects
         id_to_data = {p["_id"]: p for p in participants}
 
         failed_dms = []
         for giver_id, receiver_id in assignment.items():
             receiver_name = id_to_data[receiver_id]["username"]
 
-            # Save the assignment in the DB
             await self.collection.update_one(
                 {"_id": giver_id},
                 {"$set": {"assigned_to": receiver_id}}
             )
 
-            # DM the giver their assigned recipient
             try:
                 user = await self.bot.fetch_user(giver_id)
                 await user.send(

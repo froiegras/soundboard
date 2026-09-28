@@ -18,7 +18,6 @@ class SoundButton(nextcord.ui.Button):
         self.sound_name = sound_name
 
     async def callback(self, interaction: nextcord.Interaction):
-        # Check the person clicking is in a voice channel
         if not interaction.user.voice:
             await interaction.response.send_message(
                 "You need to be in a voice channel to play a sound!", ephemeral=True
@@ -27,7 +26,6 @@ class SoundButton(nextcord.ui.Button):
 
         voice = interaction.guild.voice_client
 
-        # Connect if not already in a channel, otherwise move to the user's channel
         if not voice:
             voice = await interaction.user.voice.channel.connect()
         elif voice.channel != interaction.user.voice.channel:
@@ -84,7 +82,6 @@ class Voice(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # Join command
     @commands.command(description="Bot joins the user's current voice channel")
     async def join(self, ctx):
         """ Bot joins the user's current voice channel """
@@ -100,16 +97,15 @@ class Voice(commands.Cog):
             voice = await channel.connect()
             await asyncio.sleep(5)
             print(f"is_connected after 5s: {voice.is_connected()}")
-            # voice.play(
-            #     nextcord.FFmpegPCMAudio(
-            #         executable=audiopeg,
-            #         source=f"{playlist_dir}/lily.mp3",
-            #         stderr=sys.stdout  # forces ffmpeg's own error output into your console
-            #     )
-            # )
+            voice.play(
+                nextcord.FFmpegPCMAudio(
+                    executable=audiopeg,
+                    source=f"{playlist_dir}/lily.mp3",
+                    stderr=sys.stdout  # forces ffmpeg's own error output into your console
+                )
+            )
 
 
-    # Leave command
     @commands.command(description="Bot leaves the current voice channel")
     async def leave(self, ctx):
         """ Bot leaves the current voice channel """
@@ -122,34 +118,33 @@ class Voice(commands.Cog):
         else:
             await ctx.send("U good? ur not even in a voice channel")
 
-    # Pause command
     @commands.command()
     async def pause(self, ctx):
+        """ Bot pauses the current audio playback """
         voice = ctx.guild.voice_client
         if voice and voice.is_playing():
             voice.pause()
         else:
             await ctx.send('No song is playing m8!')
 
-    # Resume command
     @commands.command(description="Bot resumes playing the paused music/audio")
     async def resume(self, ctx):
+        """ Bot resumes the current audio playback """
         voice = ctx.guild.voice_client
         if voice and voice.is_paused():
             voice.resume()
         else:
             await ctx.send('The song is already playing!')
 
-    # Stop command
     @commands.command(description="Stops the bots from playing music/audio")
     async def stop(self, ctx):
+        """ Bot stops the current audio playback """
         voice = ctx.guild.voice_client
         if voice:
             voice.stop()
         else:
             await ctx.send("I'm not even playing anything!")
 
-    # Play command
     @commands.command(description="Bot plays songs from playlist")
     async def play(self, ctx, arg):
         """ Bot plays songs from playlist """
@@ -192,6 +187,7 @@ class Voice(commands.Cog):
         view = PlaylistView(files)
         await ctx.send("🎵 **Sound List** — click a button to play:", view=view)
 
+    # Old playlist command that just lists the sounds in text form, commented out for now
     # @commands.command(description="Shows soundboard playlist")
     # async def playlist(self, ctx):
     #     """ Shows soundboard playlist """
