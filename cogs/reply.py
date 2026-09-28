@@ -48,7 +48,6 @@ class Reply(commands.Cog):
         """ Sends a random choice between 'Heads' and 'Tails' """
         await ctx.send(str(random.choice(['Heads', 'Tails'])))
 
-    # Message detector
     @commands.Cog.listener()
     async def on_message(self, message):
         for pattern, response in bot_reply.items():
@@ -96,7 +95,6 @@ class Reply(commands.Cog):
                 no be. don't say that. you're more than just a {substring_before_lang_ako}, be. you are loved. you are valuable. you matter. everytime na maiisip mo na.. \"{substring_before_lang_ako} lang ako 😭\" no. be, you are a wonderful person and we appreciate you so much. i just want you to know na valid ka. hindi biro maging {substring_before_lang_ako} . it must've been tough pero you did it. you are so strong kaya sobrang proud kami sayo, be.
                 """
             )
-        # await self.bot.process_commands(message)
 
 def long_message_detector(message):
     """ Detect if a message is too long or if a user is spamming """
@@ -109,8 +107,8 @@ def long_message_detector(message):
         return True
     if message.author.id in msg_time:
         time_difference = current_time - msg_time[message.author.id]
-        if time_difference > 15:  # Adjust the threshold as needed (e.g., 60 seconds)
-            msg_counts[message.author.id] = 1  # Reset the consecutive count after some time
+        if time_difference > 15:
+            msg_counts[message.author.id] = 1
     if msg_counts[message.author.id] % 10 == 0:
         return True
     msg_time[message.author.id] = current_time
@@ -131,7 +129,7 @@ def process_links(message):
     if re.search(r'\btwitter\.com/', content, re.IGNORECASE) and 'vxtwitter.com' not in content.lower():
         return re.sub(r'\btwitter\.com', 'vxtwitter.com', content, flags=re.IGNORECASE)
 
-    return None  # no matching platform, or already converted — don't repost anything
+    return None
 
 
 def setup(bot):
