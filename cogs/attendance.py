@@ -57,7 +57,6 @@ class Attendance(commands.Cog):
             record = await self.collection.find_one({"_id": user_id})
 
             if record is None:
-                # New user, never clocked in before
                 record = {
                     "_id": user_id,
                     "username": display_name,
@@ -75,7 +74,7 @@ class Attendance(commands.Cog):
                     {
                         "$set": {
                             "last_clock_date": today,
-                            "username": display_name,  # keep display name fresh in case they changed it
+                            "username": display_name,
                         },
                         "$inc": {"streak": 1},
                     },
@@ -117,6 +116,7 @@ class Attendance(commands.Cog):
                 {"_id": user_id},
                 {"$inc": {"streak": 1}}
             )
+            await ctx.message.add_reaction("✅")
             print(f"Added +1 to {target.display_name}")
         else:
             await ctx.send(f"{target.display_name} hasn't clocked in yet, can't add a star.")
