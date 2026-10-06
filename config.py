@@ -9,5 +9,6 @@ FFMPEG_LOCATION = os.getenv("FFMPEG_LOCATION")
 WON_LOC = os.getenv("WON_LOC")
 SAED_LOC = os.getenv("SAED_LOC")
 MONGO_URI = os.getenv("MONGO_URI")
+TIMEZONE = os.getenv("TIMEZONE", "Asia/Manila")
 
 DATABASE_URL = os.getenv("DATABASE_URL")

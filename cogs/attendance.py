@@ -1,10 +1,11 @@
-import os
 import datetime
+from zoneinfo import ZoneInfo
 import nextcord
-import pickledb
 
 from nextcord.ext import commands
 from dotenv import load_dotenv
+
+from config import TIMEZONE
 
 load_dotenv()
 
@@ -18,6 +19,7 @@ class Attendance(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.collection = bot.db["attendance"]
+        self.tz = ZoneInfo(TIMEZONE)
 
     @commands.command(description="Shows the list of stars of users")
     async def stars(self, ctx):
@@ -47,12 +49,12 @@ class Attendance(commands.Cog):
     async def clockin(self, ctx):
         """ Clock in for the day """
         try:
-            now = datetime.datetime.now()
+            now = datetime.datetime.now(self.tz)
             today = [now.year, now.month, now.day]
             formatted_time = f"{now.hour:02}:{now.minute:02}:{now.second:02}"
 
             user_id = ctx.author.id
-            display_name = ctx.author.display_name  # server nickname if set, else username
+            display_name = ctx.author.display_name
 
             record = await self.collection.find_one({"_id": user_id})
 
