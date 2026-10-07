@@ -15,15 +15,19 @@ class Weather(commands.Cog):
             await ctx.send("You need to tell me a city! e.g. `!weather Manila`")
             return
 
-        url = f"https://wttr.in/{city}?format=j1"
+        json_url = f"https://wttr.in/{city}?format=j1"
+        ascii_url = f"https://wttr.in/{city}?0TQ"
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
+                async with session.get(json_url) as response:
                     if response.status != 200:
                         await ctx.send(f"Couldn't fetch weather for **{city}** (status {response.status}).")
                         return
                     data = await response.json(content_type=None)
+
+                async with session.get(ascii_url) as ascii_response:
+                    ascii_art = await ascii_response.text() if ascii_response.status == 200 else None
 
             current = data["current_condition"][0]
             area = data["nearest_area"][0]
@@ -44,6 +48,14 @@ class Weather(commands.Cog):
             embed.add_field(name="🌡️ Temperature", value=f"{temp_c}°C (feels like {feels_like_c}°C)", inline=True)
             embed.add_field(name="💧 Humidity", value=f"{humidity}%", inline=True)
             embed.add_field(name="💨 Wind", value=f"{wind_kmph} km/h", inline=True)
+
+            if ascii_art:
+                # Only trim trailing whitespace — leading spaces on the first line are part of the art's alignment
+                trimmed = ascii_art.rstrip()
+                if len(trimmed) > 1000:
+                    trimmed = trimmed[:1000]
+                embed.add_field(name="Forecast", value=f"```{trimmed}```", inline=False)
+
             embed.set_footer(text="Data from wttr.in")
 
             await ctx.send(embed=embed)
