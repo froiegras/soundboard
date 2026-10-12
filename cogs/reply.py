@@ -120,8 +120,8 @@ def process_links(message):
 
     content = message.content
 
-    if re.search(r'\binstagram\.com/', content, re.IGNORECASE) and 'ddinstagram.com' not in content.lower():
-        return re.sub(r'\binstagram\.com', 'ddinstagram.com', content, flags=re.IGNORECASE)
+    if re.search(r'\binstagram\.com/', content, re.IGNORECASE) and 'kkinstagram.com' not in content.lower():
+        return re.sub(r'\binstagram\.com', 'kkinstagram.com', content, flags=re.IGNORECASE)
 
     if re.search(r'\btiktok\.com/', content, re.IGNORECASE) and 'vxtiktok.com' not in content.lower():
         return re.sub(r'\btiktok\.com', 'vxtiktok.com', content, flags=re.IGNORECASE)
