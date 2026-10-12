@@ -84,7 +84,13 @@ class Reply(commands.Cog):
         if ".com/" in message.content.lower() and not message.author.bot:
             new_link = process_links(message)
             if new_link:
-                await message.channel.send(new_link)
+                has_mentions = bool(
+                    message.mentions or message.role_mentions or message.mention_everyone
+                )
+                await message.channel.send(
+                    new_link,
+                    allowed_mentions=nextcord.AllowedMentions.none() if has_mentions else None,
+                )
         if long_message_detector(message):
             return spam_reply
         if "lang ako" in message.content.lower() and not message.author.bot:
