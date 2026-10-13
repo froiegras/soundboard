@@ -116,7 +116,7 @@ class Voice(commands.Cog):
         voice.play(
             nextcord.FFmpegPCMAudio(
                 executable=audiopeg,
-                source=f"{playlist_dir}/lily.mp3",
+                source=f"{playlist_dir}/you got friends huh (Lil Yatchy).mp3",
             ),
             after=after_playing,
         )
@@ -202,28 +202,6 @@ class Voice(commands.Cog):
         files.sort()
         view = PlaylistView(files)
         await ctx.send("🎵 **Sound List** — click a button to play:", view=view)
-
-    # Old playlist command that just lists the sounds in text form, commented out for now
-    # @commands.command(description="Shows soundboard playlist")
-    # async def playlist(self, ctx):
-    #     """ Shows soundboard playlist """
-    #     files = []
-    #     for file in os.listdir(playlist_dir):
-    #         name, ext = os.path.splitext(file)
-    #         if ext == '.mp3':
-    #             files.append(name)
-
-    #     if not files:
-    #         await ctx.send("No sounds available!")
-    #         return
-
-    #     message = "**Sound List**\n" + '\n'.join(files)
-    #     if len(message) > 2000:
-    #         # still need chunking, just at 2000 instead of 1024
-    #         for i in range(0, len(message), 2000):
-    #             await ctx.send(message[i:i+2000])
-    #     else:
-    #         await ctx.send(message)
 
 def setup(bot):
     bot.add_cog(Voice(bot))
