@@ -18,18 +18,12 @@ class SoundButton(nextcord.ui.Button):
         self.sound_name = sound_name
 
     async def callback(self, interaction: nextcord.Interaction):
+        # Cheap checks first. Errors still show as private messages
         if not interaction.user.voice:
             await interaction.response.send_message(
                 "You need to be in a voice channel to play a sound!", ephemeral=True
             )
             return
-
-        voice = interaction.guild.voice_client
-
-        if not voice:
-            voice = await interaction.user.voice.channel.connect()
-        elif voice.channel != interaction.user.voice.channel:
-            await voice.move_to(interaction.user.voice.channel)
 
         song_path = f'{playlist_dir}/{self.sound_name}.mp3'
         if not os.path.isfile(song_path):
@@ -38,13 +32,20 @@ class SoundButton(nextcord.ui.Button):
             )
             return
 
+        # Acknowledge the click silently, before the slower connect/play steps
+        await interaction.response.defer()
+
+        voice = interaction.guild.voice_client
+        if not voice:
+            voice = await interaction.user.voice.channel.connect()
+        elif voice.channel != interaction.user.voice.channel:
+            await voice.move_to(interaction.user.voice.channel)
+
         if voice.is_playing():
             voice.stop()
 
         source = nextcord.FFmpegPCMAudio(executable=audiopeg, source=song_path)
         voice.play(source)
-
-        await interaction.response.send_message(f"▶️ Playing **{self.sound_name}**", ephemeral=True)
         print(f'Now Playing: {self.sound_name}')
 
 
