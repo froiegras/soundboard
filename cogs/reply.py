@@ -48,6 +48,11 @@ class Reply(commands.Cog):
         """ Sends a random choice between 'Heads' and 'Tails' """
         await ctx.send(str(random.choice(['Heads', 'Tails'])))
 
+    @commands.command()
+    async def doesntwork(self,ctx):
+        """ Doesn't work? Don't blame Johann :^) """
+        await ctx.send("Doesnt work? Dont blame Johann :^)")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         for pattern, response in bot_reply.items():
