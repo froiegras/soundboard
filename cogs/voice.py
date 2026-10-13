@@ -91,19 +91,35 @@ class Voice(commands.Cog):
 
         channel = ctx.author.voice.channel
 
-        if ctx.voice_client:
-            await ctx.voice_client.move_to(channel)
-        else:
-            voice = await channel.connect()
-            await asyncio.sleep(5)
-            print(f"is_connected after 5s: {voice.is_connected()}")
-            voice.play(
-                nextcord.FFmpegPCMAudio(
-                    executable=audiopeg,
-                    source=f"{playlist_dir}/lily.mp3",
-                    stderr=sys.stdout  # forces ffmpeg's own error output into your console
-                )
-            )
+        try:
+            if ctx.voice_client:
+                await ctx.voice_client.move_to(channel)
+                voice = ctx.voice_client
+            else:
+                voice = await channel.connect(timeout=30)
+        except Exception as e:
+            await ctx.send(f"Couldn't join the voice channel: {e}")
+            return
+
+        if not voice.is_connected():
+            await ctx.send("The voice connection didn't finish establishing. Try again?")
+            await voice.disconnect(force=True)
+            return
+
+        if voice.is_playing():
+            voice.stop()
+
+        def after_playing(error):
+            if error:
+                print(f"Playback error: {error}")
+
+        voice.play(
+            nextcord.FFmpegPCMAudio(
+                executable=audiopeg,
+                source=f"{playlist_dir}/lily.mp3",
+            ),
+            after=after_playing,
+        )
 
 
     @commands.command(description="Bot leaves the current voice channel")
