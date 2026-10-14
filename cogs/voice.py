@@ -83,6 +83,12 @@ class Voice(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def _list_sounds(self):
+        return sorted(
+            (os.path.splitext(f)[0] for f in os.listdir(playlist_dir) if f.lower().endswith(".mp3")),
+            key=str.lower,
+        )
+
     @commands.command(description="Bot joins the user's current voice channel")
     async def join(self, ctx):
         """ Bot joins the user's current voice channel """
@@ -203,6 +209,42 @@ class Voice(commands.Cog):
         files.sort()
         view = PlaylistView(files)
         await ctx.send("🎵 **Sound List** — click a button to play:", view=view)
+
+    @nextcord.slash_command(name="play", description="Play a sound from the soundboard")
+    async def play_slash(
+        self,
+        interaction: nextcord.Interaction,
+        sound: str = nextcord.SlashOption(description="Start typing to search", autocomplete=True),
+    ):
+        # Autocomplete suggestions aren't enforced, so users can submit any text.
+        # Checking against the real list also blocks path tricks like "../../x".
+        if sound not in self._list_sounds():
+            await interaction.response.send_message(f"Couldn't find `{sound}`.", ephemeral=True)
+            return
+
+        if not interaction.user.voice:
+            await interaction.response.send_message("Join a voice channel first!", ephemeral=True)
+            return
+
+        await interaction.response.defer(ephemeral=True)  # connecting can take more than 3 seconds
+
+        voice = interaction.guild.voice_client
+        if not voice:
+            voice = await interaction.user.voice.channel.connect()
+        elif voice.channel != interaction.user.voice.channel:
+            await voice.move_to(interaction.user.voice.channel)
+
+        if voice.is_playing():
+            voice.stop()
+
+        voice.play(nextcord.FFmpegPCMAudio(executable=audiopeg, source=f"{playlist_dir}/{sound}.mp3"))
+        await interaction.followup.send(f"▶️ Playing **{sound}**", ephemeral=True)
+
+    @play_slash.on_autocomplete("sound")
+    async def play_autocomplete(self, interaction: nextcord.Interaction, current: str):
+        current = current.lower()
+        matches = [s for s in self._list_sounds() if current in s.lower()]
+        await interaction.response.send_autocomplete(matches[:25])  # Discord's max is 25
 
 def setup(bot):
     bot.add_cog(Voice(bot))
