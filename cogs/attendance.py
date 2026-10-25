@@ -205,24 +205,6 @@ class Attendance(commands.Cog):
         if now.month == 1:
             await self.announce_year_winner(now.year - 1)
 
-    @commands.command(description="Preview a year's winner (owner only)")
-    @commands.is_owner()
-    async def testyearwinner(self, ctx, year: int = None):
-        year = year or datetime.datetime.now(self.tz).year
-        sent = await self.announce_year_winner(year, channel=ctx.channel, force=True)
-        if not sent:
-            await ctx.send(f"No clock-in data for {year}.")
-
-    # Run this command once then delete.
-    @commands.command(description="One-time: copy totals into a year's counter (owner only)")
-    @commands.is_owner()
-    async def backfillyear(self, ctx, year: int):
-        result = await self.collection.update_many(
-            {"yearly": {"$exists": False}},
-            [{"$set": {"yearly": {str(year): "$streak"}}}],
-        )
-        await ctx.send(f"Backfilled {result.modified_count} users into {year}.")
-
 def setup(bot):
     """ Load the Attendance cog """
     bot.add_cog(Attendance(bot))
