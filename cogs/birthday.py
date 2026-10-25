@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 import nextcord
 from nextcord.ext import commands, tasks
 
-from config import TIMEZONE, BIRTHDAY_CHANNEL_ID
+from config import TIMEZONE, PA_CHANNEL_ID
 
 PHT = datetime.timezone(datetime.timedelta(hours=8))
 
@@ -120,9 +120,9 @@ class Birthday(commands.Cog):
         if not birthday_people:
             return
 
-        channel = self.bot.get_channel(BIRTHDAY_CHANNEL_ID)
+        channel = self.bot.get_channel(PA_CHANNEL_ID)
         if channel is None:
-            print(f"Birthday channel ID {BIRTHDAY_CHANNEL_ID} not found or bot lacks access.")
+            print(f"Birthday channel ID {PA_CHANNEL_ID} not found or bot lacks access.")
             return
 
         for person in birthday_people:

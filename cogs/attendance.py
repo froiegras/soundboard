@@ -2,10 +2,10 @@ import datetime
 from zoneinfo import ZoneInfo
 import nextcord
 
-from nextcord.ext import commands
+from nextcord.ext import commands, tasks
 from dotenv import load_dotenv
 
-from config import TIMEZONE
+from config import TIMEZONE, PA_CHANNEL_ID
 
 load_dotenv()
 
@@ -13,6 +13,7 @@ load_dotenv()
 star = []
 reminders = []
 leaderboard = []
+PHT = datetime.timezone(datetime.timedelta(hours=8))
 
 class Attendance(commands.Cog):
     """ A cog for handling attendance and star tracking """
@@ -20,6 +21,8 @@ class Attendance(commands.Cog):
         self.bot = bot
         self.collection = bot.db["attendance"]
         self.tz = ZoneInfo(TIMEZONE)
+        self.year_end_check.start()
+        self.year_end_check.cancel()
 
     @commands.command(description="Shows the list of stars of users")
     async def stars(self, ctx):
@@ -31,7 +34,6 @@ class Attendance(commands.Cog):
             await ctx.send("No one has clocked in yet!")
             return
 
-        # Sort alphabetically by username (change key if you'd rather sort by streak)
         sorted_records = sorted(records, key=lambda r: r["username"].lower())
 
         usernames = [r["username"] for r in sorted_records]
@@ -52,6 +54,7 @@ class Attendance(commands.Cog):
             now = datetime.datetime.now(self.tz)
             today = [now.year, now.month, now.day]
             formatted_time = f"{now.hour:02}:{now.minute:02}:{now.second:02}"
+            year_key = str(now.year)
 
             user_id = ctx.author.id
             display_name = ctx.author.display_name
@@ -78,7 +81,7 @@ class Attendance(commands.Cog):
                             "last_clock_date": today,
                             "username": display_name,
                         },
-                        "$inc": {"streak": 1},
+                        "$inc": {"streak": 1, f"yearly.{year_key}": 1},
                     },
                 )
 
@@ -114,11 +117,14 @@ class Attendance(commands.Cog):
 
         record = await self.collection.find_one({"_id": user_id})
         if record:
+            year_key = str(datetime.datetime.now(self.tz).year)
+
             await self.collection.update_one(
                 {"_id": user_id},
-                {"$inc": {"streak": 1}}
+                {"$inc": {"streak": 1, f"yearly.{year_key}": 1}}
             )
-            await ctx.message.add_reaction("✅")
+
+            await ctx.message.add_reaction("⭐")
             print(f"Added +1 to {target.display_name}")
         else:
             await ctx.send(f"{target.display_name} hasn't clocked in yet, can't add a star.")
@@ -150,13 +156,72 @@ class Attendance(commands.Cog):
             days_logged_in = record["streak"]
             await ctx.reply(f'{nickname} has {days_logged_in} ⭐ ( ﾟ∀ﾟﾉﾉﾞ')
 
-            # Check for accolades based on days_logged_in, highest threshold first
             for days, accolade_msg in accolades:
                 if days_logged_in >= days:
                     await ctx.send(accolade_msg.format(nickname=nickname))
-                    break  # now correctly inside the if — stops at first match
+                    break
         else:
             await ctx.reply('You haven\'t clocked in a single time? We should fire you.')
+
+    async def get_year_winners(self, year: int):
+        """ Returns (winners, top_count). More than one winner means a tie. """
+        key = str(year)
+        records = await self.collection.find({f"yearly.{key}": {"$gt": 0}}).to_list(length=None)
+        if not records:
+            return [], 0
+        top = max(r["yearly"][key] for r in records)
+        return [r for r in records if r["yearly"][key] == top], top
+
+    async def announce_year_winner(self, year: int, channel=None, force=False) -> bool:
+        meta = self.bot.db["attendance_meta"]
+        if not force and await meta.find_one({"_id": f"announced:{year}"}):
+            return False
+
+        winners, top = await self.get_year_winners(year)
+        channel = channel or self.bot.get_channel(PA_CHANNEL_ID)
+        if not winners or channel is None:
+            return False
+
+        mentions = " ".join(f"<@{w['_id']}>" for w in winners)
+        await channel.send(
+            f"🏆 **{year} Attendance Champion{'s' if len(winners) > 1 else ''}** 🏆\n"
+            f"Congratulations {mentions}, you clocked in **{top}** times in {year}! ⭐"
+        )
+
+        if not force:
+            await meta.insert_one({"_id": f"announced:{year}"})
+        return True
+
+    @tasks.loop(time=datetime.time(hour=0, minute=5, tzinfo=PHT))
+    async def year_end_check(self):
+        now = datetime.datetime.now(self.tz)
+        if now.month == 1 and now.day == 1:
+            await self.announce_year_winner(now.year - 1)
+
+    @year_end_check.before_loop
+    async def before_year_end_check(self):
+        await self.bot.wait_until_ready()
+        now = datetime.datetime.now(self.tz)
+        if now.month == 1:
+            await self.announce_year_winner(now.year - 1)
+
+    @commands.command(description="Preview a year's winner (owner only)")
+    @commands.is_owner()
+    async def testyearwinner(self, ctx, year: int = None):
+        year = year or datetime.datetime.now(self.tz).year
+        sent = await self.announce_year_winner(year, channel=ctx.channel, force=True)
+        if not sent:
+            await ctx.send(f"No clock-in data for {year}.")
+
+    # Run this command once then delete.
+    @commands.command(description="One-time: copy totals into a year's counter (owner only)")
+    @commands.is_owner()
+    async def backfillyear(self, ctx, year: int):
+        result = await self.collection.update_many(
+            {"yearly": {"$exists": False}},
+            [{"$set": {"yearly": {str(year): "$streak"}}}],
+        )
+        await ctx.send(f"Backfilled {result.modified_count} users into {year}.")
 
 def setup(bot):
     """ Load the Attendance cog """
