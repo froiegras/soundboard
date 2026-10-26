@@ -16,26 +16,26 @@ Birthday:
 Reply:
   - coinflip: Sends a random choice between 'Heads' and 'Tails' 
   - doesntwork: Doesn't work? Don't blame Johann :^) 
-  - namer: Sends a random name from the name_generator list 
-  - wotd: Sends a random word from the n_words list 
+  - namer: Sends a random name 
+  - wotd: Sends word of the day 
 SecretSanta:
   - joinsanta: Adds the user to the Secret Santa pool 
   - leavesanta: Removes the user from the pool
   - poolsanta: Lists current participants 
   - resetsanta: Reset secret santa pool 
-  - startsanta: Randomly assigns each participant to someone
+  - startsanta: Bot assigns each user in the pool randomly
 Voice:
   - join: Bot joins the user's current voice channel 
   - leave: Bot leaves the current voice channel 
   - pause: Bot pauses the current audio playback 
-  - play: Bot plays songs from playlist 
-  - playlist: Shows soundboard playlist as clickable buttons 
+  - play <audio>: Bot plays songs from playlist 
+  - playlist: Shows available audio 
   - resume: Bot resumes the current audio playback 
   - stop: Bot stops the current audio playback 
 Weather:
   - weather: Fetches current weather for a given city using wttr.in 
 ​General:
-  - help: Shows this message
+  - help: Lists the commands available.
   - shutdown: Shuts down the bot. Only the owner can use this command. 
 
 Type !help command for more info on a command.
