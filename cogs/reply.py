@@ -53,6 +53,11 @@ class Reply(commands.Cog):
         """ Doesn't work? Don't blame Johann :^) """
         await ctx.send("Doesnt work? Dont blame Johann :^)")
 
+    @commands.command()
+    async def rizal(self,ctx):
+        """ lethal? """
+        await ctx.send("lethal?")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         for pattern, response in bot_reply.items():
