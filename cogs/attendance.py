@@ -34,7 +34,7 @@ class Attendance(commands.Cog):
             await ctx.send("No one has clocked in yet!")
             return
 
-        sorted_records = sorted(records, key=lambda r: r["username"].lower())
+        sorted_records = sorted(records, key=lambda r: r["streak"], reverse=True)
 
         usernames = [r["username"] for r in sorted_records]
         streaks = [str(r["streak"]) for r in sorted_records]
