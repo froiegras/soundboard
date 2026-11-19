@@ -1,9 +1,10 @@
 import asyncio
 import os
 import sys
+import time
 import nextcord
 
-from nextcord.ext import commands
+from nextcord.ext import commands, tasks
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,13 +13,18 @@ playlist_dir = os.getenv('PLAYLIST_DIR')
 audiopeg = os.getenv('FFMPEG_LOCATION')
 files = []
 
+IDLE_TIMEOUT = 300
+ALONE_TIMEOUT = 60
+
 class SoundButton(nextcord.ui.Button):
     def __init__(self, sound_name: str):
         super().__init__(label=sound_name, style=nextcord.ButtonStyle.primary)
         self.sound_name = sound_name
 
     async def callback(self, interaction: nextcord.Interaction):
-        # Cheap checks first. Errors still show as private messages
+        cog = interaction.client.get_cog("Voice")
+        if cog:
+            cog.touch(interaction.guild.id, interaction.channel)
         if not interaction.user.voice:
             await interaction.response.send_message(
                 "You need to be in a voice channel to play a sound!", ephemeral=True
@@ -32,7 +38,6 @@ class SoundButton(nextcord.ui.Button):
             )
             return
 
-        # Acknowledge the click silently, before the slower connect/play steps
         await interaction.response.defer()
 
         voice = interaction.guild.voice_client
@@ -82,12 +87,53 @@ class PlaylistView(nextcord.ui.View):
 class Voice(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.last_active = {}
+        self.last_channel = {}
+        self.idle_check.start()
+
+    def cog_unload(self):
+        self.idle_check.cancel()
+
+    def touch(self, guild_id, text_channel=None):
+        self.last_active[guild_id] = time.monotonic()
+        if text_channel:
+            self.last_channel[guild_id] = text_channel
 
     def _list_sounds(self):
         return sorted(
             (os.path.splitext(f)[0] for f in os.listdir(playlist_dir) if f.lower().endswith(".mp3")),
             key=str.lower,
         )
+
+    @tasks.loop(seconds=30)
+    async def idle_check(self):
+        now = time.monotonic()
+        for vc in list(self.bot.voice_clients):
+            gid = vc.guild.id
+
+            if vc.is_playing():
+                self.touch(gid)
+                continue
+
+            last = self.last_active.setdefault(gid, now)
+            humans = [m for m in vc.channel.members if not m.bot]
+            idle_for = now - last
+
+            if idle_for >= IDLE_TIMEOUT or (not humans and idle_for >= ALONE_TIMEOUT):
+                reason = "everyone left" if not humans else "no activity"
+                await vc.disconnect(force=True)
+                self.last_active.pop(gid, None)
+
+                channel = self.last_channel.pop(gid, None)
+                if channel:
+                    try:
+                        await channel.send(f"👋 Left the voice channel ({reason}).", delete_after=30)
+                    except Exception:
+                        pass
+
+    @idle_check.before_loop
+    async def before_idle_check(self):
+        await self.bot.wait_until_ready()
 
     @commands.command(description="Bot joins the user's current voice channel")
     async def join(self, ctx):
@@ -117,6 +163,7 @@ class Voice(commands.Cog):
             voice.stop()
 
         def after_playing(error):
+            self.touch(ctx.guild.id, ctx.channel)
             if error:
                 print(f"Playback error: {error}")
 
@@ -127,7 +174,6 @@ class Voice(commands.Cog):
             ),
             after=after_playing,
         )
-
 
     @commands.command(description="Bot leaves the current voice channel")
     async def leave(self, ctx):
@@ -191,6 +237,7 @@ class Voice(commands.Cog):
 
         source = nextcord.FFmpegPCMAudio(executable=audiopeg, source=song_path)
         voice.play(source)
+        self.touch(ctx.guild.id, ctx.channel)
         print(f'Now Playing: {arg}')
 
     @commands.command(description="Shows soundboard playlist as buttons")
@@ -216,8 +263,6 @@ class Voice(commands.Cog):
         interaction: nextcord.Interaction,
         sound: str = nextcord.SlashOption(description="Start typing to search", autocomplete=True),
     ):
-        # Autocomplete suggestions aren't enforced, so users can submit any text.
-        # Checking against the real list also blocks path tricks like "../../x".
         if sound not in self._list_sounds():
             await interaction.response.send_message(f"Couldn't find `{sound}`.", ephemeral=True)
             return
@@ -226,7 +271,7 @@ class Voice(commands.Cog):
             await interaction.response.send_message("Join a voice channel first!", ephemeral=True)
             return
 
-        await interaction.response.defer(ephemeral=True)  # connecting can take more than 3 seconds
+        await interaction.response.defer(ephemeral=True)
 
         voice = interaction.guild.voice_client
         if not voice:
@@ -235,6 +280,7 @@ class Voice(commands.Cog):
             await voice.move_to(interaction.user.voice.channel)
 
         if voice.is_playing():
+            self.touch(interaction.guild.id, interaction.channel)
             voice.stop()
 
         voice.play(nextcord.FFmpegPCMAudio(executable=audiopeg, source=f"{playlist_dir}/{sound}.mp3"))
