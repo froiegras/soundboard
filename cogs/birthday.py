@@ -74,7 +74,6 @@ class Birthday(commands.Cog):
         if year:
             update_fields["year"] = year
         else:
-            # Explicitly unset year if they're re-setting without one
             update_fields["year"] = None
 
         await self.collection.update_one(
